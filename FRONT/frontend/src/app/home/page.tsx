@@ -2,16 +2,46 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { generateRSAKeys, generateECCKeys } from "@/utils/crypto";
 
 export default function HomePage() {
   const [keyType, setKeyType] = useState<"rsa" | "ecc">("rsa");
   const router = useRouter();
 
   const handleGenerateKeys = async () => {
-    alert(`Generar llaves ${keyType.toUpperCase()} (lógica pendiente)`);
-    // acá se generaran  luega las llaves y:
-    // - Descargar la privada
-    // - Enviar la pública al backend
+    try {
+      let publicKey = "";
+      let privateKey = "";
+
+      if (keyType === "rsa") {
+        const keys = await generateRSAKeys();
+        publicKey = keys.publicKey;
+        privateKey = keys.privateKey;
+      } else {
+        const keys = await generateECCKeys();
+        publicKey = keys.publicKey;
+        privateKey = keys.privateKey;
+      }
+
+      // Descargar privada
+      const blob = new Blob([privateKey], { type: "text/plain" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = `private_key_${keyType}.pem`;
+      link.click();
+
+      // Enviar pública al backend
+      await fetch("/api/publickey", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ publicKey, type: keyType }),
+      });
+
+      alert("Llaves generadas y enviada la pública correctamente");
+    } catch (err) {
+      console.error("Error generando llaves:", err);
+      alert("Ocurrió un error generando las llaves");
+    }
   };
 
   return (
@@ -39,7 +69,7 @@ export default function HomePage() {
         Generar llaves {keyType.toUpperCase()}
       </button>
 
-      {/* Acá irá lo de la subida de archivo, lista de archivos, etc. */}
+      {/* Aquí después irá subida de archivos y más cosas */}
     </div>
   );
 }
