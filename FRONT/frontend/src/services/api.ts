@@ -27,7 +27,7 @@ interface RegisterResponse {
   message: string;
 }
 
-interface FileMeta {
+export interface FileMeta {
   id: string;
   nombre: string;
   user_id: string;
@@ -73,7 +73,7 @@ export const uploadFile = async (
   formData.append('file', file);
   if (signature) formData.append('signature', signature);
 
-  const res = await api.post('/guardar', formData, {
+  const res = await api.post<{ success: boolean; id: string }>('/guardar', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
   });
   return res.data;
@@ -87,7 +87,7 @@ export const getFiles = async (): Promise<FileMeta[]> => {
 
 // DESCARGAR ARCHIVO
 export const downloadFile = async (id: string): Promise<Blob> => {
-  const res = await api.get(`/archivos/${id}/descargar`, {
+  const res = await api.get<Blob>(`/archivos/${id}/descargar`, {
     responseType: 'blob',
   });
   return res.data;
