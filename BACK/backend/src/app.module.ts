@@ -6,6 +6,7 @@ import { UserModule } from './user/user.module';
 import { FileModule } from './file/file.module';
 import { PrismaService } from './prisma/prisma.service';
 
+
 @Module({
   imports: [AuthModule, UserModule, FileModule],
   controllers: [AppController],
