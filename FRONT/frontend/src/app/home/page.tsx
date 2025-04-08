@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { generateRSAKeys, generateECCKeys } from "@/utils/crypto";
+import { savePublicKey } from "@/services/api";
 
 export default function HomePage() {
   const [keyType, setKeyType] = useState<"rsa" | "ecc">("rsa");
@@ -13,6 +14,7 @@ export default function HomePage() {
       let publicKey = "";
       let privateKey = "";
 
+      // Generar llaves
       if (keyType === "rsa") {
         const keys = await generateRSAKeys();
         publicKey = keys.publicKey;
@@ -30,14 +32,13 @@ export default function HomePage() {
       link.download = `private_key_${keyType}.pem`;
       link.click();
 
-      // Enviar pública al backend
-      await fetch("/api/publickey", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ publicKey, type: keyType }),
-      });
+      // Guardar pública en localStorage
+      localStorage.setItem("publicKey", publicKey);
 
-      alert("Llaves generadas y enviada la pública correctamente");
+      // Enviar pública al backend
+      await savePublicKey(publicKey);
+
+      alert("Llaves generadas y pública enviada correctamente");
     } catch (err) {
       console.error("Error generando llaves:", err);
       alert("Ocurrió un error generando las llaves");

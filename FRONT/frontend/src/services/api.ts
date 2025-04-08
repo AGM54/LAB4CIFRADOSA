@@ -105,4 +105,8 @@ export const verifyFile = async (
   return res.data;
 };
 
+export const savePublicKey = async (publicKey: string): Promise<void> => {
+  await api.post('/user/publickey', { publicKey });
+};
+
 export default api;
