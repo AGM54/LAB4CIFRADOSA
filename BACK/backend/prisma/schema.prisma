@@ -8,20 +8,24 @@ datasource db {
 }
 
 model User {
-  id          Int      @id @default(autoincrement())
-  email       String   @unique
-  name        String
-  password    String
-  publicKey   String
-  files       File[]
+  id        Int     @id @default(autoincrement())
+  email     String  @unique
+  name      String
+  password  String
+  publicKey String
+
+  // Relación 1:N con archivos
+  files     File[]
 }
 
 model File {
-  id          Int      @id @default(autoincrement())
-  name        String
-  content     Bytes
-  hash        String
-  signature   String?
-  user        User     @relation(fields: [userId], references: [id])
-  userId      Int
-}//
+  id        Int      @id @default(autoincrement())
+  name      String   // nombre del archivo
+  content   Bytes    // contenido binario del archivo
+  hash      String?  //  hash SHA-256 ahora es opcional
+  signature String?  // firma digital también opcional
+
+  // Relación con usuario
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+}

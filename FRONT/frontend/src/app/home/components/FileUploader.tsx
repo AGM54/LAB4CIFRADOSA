@@ -1,7 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { uploadFile, getFiles, downloadFile, verifyFile } from "@/services/api";
+import {
+  uploadFile,
+  getFiles,
+  downloadFile,
+  verifyFile,
+} from "@/services/api";
+import { calculateHashSHA256 } from "@/utils/crypto";
 
 export default function FileUploader() {
   const [file, setFile] = useState<File | null>(null);
@@ -45,12 +51,16 @@ export default function FileUploader() {
     setLoading(true);
 
     let signature: string | undefined = undefined;
+    let hash: string | undefined = undefined;
 
-    if (sign && privateKey) {
+    try {
       const arrayBuffer = await file.arrayBuffer();
       const hashBuffer = await crypto.subtle.digest("SHA-256", arrayBuffer);
+      hash = Array.from(new Uint8Array(hashBuffer))
+        .map((b) => b.toString(16).padStart(2, "0"))
+        .join("");
 
-      try {
+      if (sign && privateKey) {
         const importedKey = await crypto.subtle.importKey(
           "pkcs8",
           strToArrayBuffer(privateKey),
@@ -62,23 +72,23 @@ export default function FileUploader() {
           ["sign"]
         );
 
-        const signatureBuffer = await crypto.subtle.sign("RSASSA-PKCS1-v1_5", importedKey, hashBuffer);
+        const signatureBuffer = await crypto.subtle.sign(
+          {
+            name: "RSASSA-PKCS1-v1_5",
+          },
+          importedKey,
+          hashBuffer
+        );
+        
         signature = btoa(String.fromCharCode(...new Uint8Array(signatureBuffer)));
-      } catch (err) {
-        console.error("Error al firmar:", err);
-        alert("Error al firmar el archivo");
-        setLoading(false);
-        return;
       }
-    }
 
-    try {
-      await uploadFile(file, signature);
+      await uploadFile(file, signature, hash);
       alert("Archivo subido correctamente");
       setFile(null);
       fetchFiles();
     } catch (err) {
-      console.error(err);
+      console.error("Error durante subida/firma:", err);
       alert("Error al subir archivo");
     } finally {
       setLoading(false);
@@ -150,7 +160,10 @@ export default function FileUploader() {
         ) : (
           <ul className="space-y-2">
             {files.map((file) => (
-              <li key={file.id} className="flex justify-between items-center border p-2 rounded">
+              <li
+                key={file.id}
+                className="flex justify-between items-center border p-2 rounded"
+              >
                 <span>{file.nombre}</span>
                 <div className="flex gap-2">
                   <button

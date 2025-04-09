@@ -64,14 +64,16 @@ export const register = async (
   return res.data;
 };
 
-// SUBIR ARCHIVO
+// ✅ SUBIR ARCHIVO (con firma y hash opcionales)
 export const uploadFile = async (
   file: File,
-  signature?: string
+  signature?: string,
+  hash?: string
 ): Promise<{ success: boolean; id: string }> => {
   const formData = new FormData();
   formData.append('file', file);
   if (signature) formData.append('signature', signature);
+  if (hash) formData.append('hash', hash);
 
   const res = await api.post<{ success: boolean; id: string }>('/guardar', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
@@ -105,6 +107,7 @@ export const verifyFile = async (
   return res.data;
 };
 
+// GUARDAR LLAVE PÚBLICA
 export const savePublicKey = async (publicKey: string): Promise<void> => {
   await api.post('/user/publickey', { publicKey });
 };
