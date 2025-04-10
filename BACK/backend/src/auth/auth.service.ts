@@ -8,14 +8,30 @@ import { PrismaService } from '../services/prisma.service';
 
 @Injectable()
 export class AuthService {
-  // Inyectamos PrismaService y JwtService vía el constructor
-  constructor(
+  /**
+   * Servicio de autenticación que maneja registro, inicio de sesión y verificación de tokens JWT.
+   * 
+   * @param prisma Servicio Prisma para acceso a base de datos.
+   * @param jwtService Servicio para generación y verificación de JWT.
+  */
+ constructor(
+   // Inyectamos PrismaService y JwtService vía el constructor
     private prisma: PrismaService,
     private jwtService: JwtService
   ) {}
 
-  // Método para registrar un nuevo usuario
-  async register(email: string, name: string, password: string) {
+  /**
+   * Registra un nuevo usuario con email, nombre y contraseña.
+   * La contraseña se almacena hasheada con bcrypt.
+   * 
+   * @param email Correo electrónico del nuevo usuario.
+   * @param name Nombre del usuario.
+   * @param password Contraseña en texto plano.
+   * @returns Mensaje de éxito si el usuario fue registrado.
+   * @throws Error si ya existe un usuario con el mismo correo.
+  */
+ async register(email: string, name: string, password: string) {
+    // Método para registrar un nuevo usuario
     console.log("📥 [REGISTER] Intentando registrar usuario:", email);
 
     // Verificamos si ya existe un usuario con el mismo correo
@@ -43,8 +59,16 @@ export class AuthService {
     return { message: 'Usuario registrado exitosamente' };
   }
 
-  // Método para login: verifica credenciales y devuelve un JWT
+  /**
+   * Inicia sesión verificando las credenciales y genera un JWT.
+   * 
+   * @param email Correo electrónico del usuario.
+   * @param password Contraseña ingresada por el usuario.
+   * @returns Objeto con token JWT si las credenciales son válidas.
+   * @throws UnauthorizedException si las credenciales son inválidas.
+   */
   async login(email: string, password: string) {
+    // Método para login: verifica credenciales y devuelve un JWT
     console.log("🔐 [LOGIN] Intentando iniciar sesión:", email);
 
     // Buscamos al usuario por correo
@@ -71,9 +95,16 @@ export class AuthService {
     console.log("🎟️ JWT generado exitosamente para:", email);
     return { token };
   }
-
-  // Método para verificar la validez de un token JWT
+  
+  /**
+   * Verifica la validez de un token JWT.
+   * 
+   * @param token Token JWT a verificar.
+   * @returns Payload decodificado si el token es válido.
+   * @throws UnauthorizedException si el token es inválido o ha expirado.
+   */
   verifyToken(token: string) {
+    // Método para verificar la validez de un token JWT
     try {
       const payload = this.jwtService.verify(token, {
         secret: process.env.JWT_SECRET || 'defaultSecret',
