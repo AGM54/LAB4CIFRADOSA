@@ -28,19 +28,26 @@ let AuthService = class AuthService {
         }
         const hashedPassword = await bcrypt.hash(password, 10);
         await this.prisma.user.create({
-            data: { email, name, password: hashedPassword, publicKey: "" },
+            data: {
+                email,
+                name,
+                password: hashedPassword,
+                publicKey: ""
+            },
         });
         return { message: 'Usuario registrado exitosamente' };
     }
     async login(email, password) {
         const user = await this.prisma.user.findUnique({ where: { email } });
-        if (!user)
+        if (!user) {
             throw new common_1.UnauthorizedException('Credenciales inválidas');
+        }
         const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch)
+        if (!isMatch) {
             throw new common_1.UnauthorizedException('Credenciales inválidas');
+        }
         const token = this.jwtService.sign({
-            id: user.id,
+            sub: user.id,
             email: user.email,
         });
         return { token };
@@ -48,7 +55,7 @@ let AuthService = class AuthService {
     verifyToken(token) {
         try {
             return this.jwtService.verify(token, {
-                secret: process.env.JWT_SECRET,
+                secret: process.env.JWT_SECRET || 'defaultSecret',
             });
         }
         catch (error) {

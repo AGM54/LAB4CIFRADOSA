@@ -11,7 +11,22 @@ export declare class FileService {
         userId: number;
     }>;
     verifyFile(fileId: number, publicKeyPem: string): Promise<{
-        valid: boolean;
+        valid: any;
         message: string;
+    }>;
+    private detectKeyType;
+    listFiles(userId: number): Promise<{
+        id: number;
+        name: string;
+        hash: string | null;
+        signature: string | null;
+    }[]>;
+    getFileById(id: number): Promise<{
+        id: number;
+        name: string;
+        content: Uint8Array;
+        hash: string | null;
+        signature: string | null;
+        userId: number;
     }>;
 }

@@ -4,8 +4,8 @@ export declare class UserService {
     constructor(prisma: PrismaService);
     savePublicKey(email: string, publicKey: string): Promise<{
         id: number;
-        name: string;
         email: string;
+        name: string;
         password: string;
         publicKey: string;
     }>;

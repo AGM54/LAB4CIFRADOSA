@@ -28,11 +28,10 @@ interface RegisterResponse {
 }
 
 export interface FileMeta {
-  id: string;
-  nombre: string;
-  user_id: string;
-  content: string;
-  contentHash: string;
+  id: number;
+  name: string;
+  hash: string | null;
+  signature: string | null;
 }
 
 interface VerifyResponse {
@@ -40,28 +39,42 @@ interface VerifyResponse {
   message?: string;
 }
 
-// LOGIN
+// ✅ LOGIN
 export const login = async (
   email: string,
   password: string
 ): Promise<LoginResponse> => {
-  const res = await api.post<LoginResponse>('/login', { email, password });
-  localStorage.setItem('token', res.data.token);
-  return res.data;
+  try {
+    console.log("🔐 Intentando login...");
+    const res = await api.post<LoginResponse>('/login', { email, password });
+    localStorage.setItem('token', res.data.token);
+    console.log("✅ Login exitoso");
+    return res.data;
+  } catch (error: any) {
+    console.error("❌ Error en login:", error.response?.status, error.response?.data);
+    throw error;
+  }
 };
 
-// REGISTER
+// ✅ REGISTER
 export const register = async (
   email: string,
   name: string,
   password: string
 ): Promise<RegisterResponse> => {
-  const res = await api.post<RegisterResponse>('/register', {
-    email,
-    name,
-    password,
-  });
-  return res.data;
+  try {
+    console.log("📝 Intentando registrar usuario...");
+    const res = await api.post<RegisterResponse>('/register', {
+      email,
+      name,
+      password,
+    });
+    console.log("✅ Registro exitoso");
+    return res.data;
+  } catch (error: any) {
+    console.error("❌ Error en register:", error.response?.status, error.response?.data);
+    throw error;
+  }
 };
 
 // ✅ SUBIR ARCHIVO (con firma y hash opcionales)
@@ -70,46 +83,86 @@ export const uploadFile = async (
   signature?: string,
   hash?: string
 ): Promise<{ success: boolean; id: string }> => {
-  const formData = new FormData();
-  formData.append('file', file);
-  if (signature) formData.append('signature', signature);
-  if (hash) formData.append('hash', hash);
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+    if (signature) formData.append('signature', signature);
+    if (hash) formData.append('hash', hash);
 
-  const res = await api.post<{ success: boolean; id: string }>('/guardar', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
-  });
-  return res.data;
+    console.log("📤 Subiendo archivo a: /file/guardar");
+
+    const res = await api.post<{ success: boolean; id: string }>(
+      '/file/guardar',
+      formData,
+      {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      }
+    );
+
+    console.log("✅ Archivo subido correctamente:", res.data);
+    return res.data;
+  } catch (error: any) {
+    console.error("❌ Error al subir archivo:", error.response?.status, error.response?.data);
+    throw error;
+  }
 };
 
-// OBTENER ARCHIVOS
+// ✅ OBTENER ARCHIVOS
 export const getFiles = async (): Promise<FileMeta[]> => {
-  const res = await api.get<FileMeta[]>('/archivos');
-  return res.data;
+  try {
+    console.log("📁 Solicitando archivos desde: /file/archivos");
+    const res = await api.get<FileMeta[]>('/file/archivos');
+    console.log("✅ Archivos recibidos:", res.data);
+    return res.data;
+  } catch (error: any) {
+    console.error("❌ Error al obtener archivos:", error.response?.status, error.response?.data);
+    throw error;
+  }
 };
 
-// DESCARGAR ARCHIVO
-export const downloadFile = async (id: string): Promise<Blob> => {
-  const res = await api.get<Blob>(`/archivos/${id}/descargar`, {
-    responseType: 'blob',
-  });
-  return res.data;
+// ✅ DESCARGAR ARCHIVO
+export const downloadFile = async (id: number): Promise<Blob> => {
+  try {
+    console.log(`📥 Descargando archivo con ID: ${id}`);
+    const res = await api.get<Blob>(`/file/${id}/descargar`, {
+      responseType: 'blob',
+    });
+    return res.data;
+  } catch (error: any) {
+    console.error("❌ Error al descargar archivo:", error.response?.status, error.response?.data);
+    throw error;
+  }
 };
 
-// VERIFICAR ARCHIVO
+// ✅ VERIFICAR ARCHIVO
 export const verifyFile = async (
-  fileId: string,
+  fileId: number,
   publicKey: string
 ): Promise<VerifyResponse> => {
-  const res = await api.post<VerifyResponse>('/verificar', {
-    fileId,
-    publicKey,
-  });
-  return res.data;
+  try {
+    console.log(`🔍 Verificando archivo con ID: ${fileId}`);
+    const res = await api.post<VerifyResponse>('/file/verificar', {
+      fileId,
+      publicKey,
+    });
+    console.log("✅ Resultado de verificación:", res.data);
+    return res.data;
+  } catch (error: any) {
+    console.error("❌ Error al verificar archivo:", error.response?.status, error.response?.data);
+    throw error;
+  }
 };
 
-// GUARDAR LLAVE PÚBLICA
+// ✅ GUARDAR LLAVE PÚBLICA
 export const savePublicKey = async (publicKey: string): Promise<void> => {
-  await api.post('/user/publickey', { publicKey });
+  try {
+    console.log("📤 Enviando clave pública al backend...");
+    await api.post('/user/publickey', { publicKey });
+    console.log("✅ Clave pública guardada exitosamente.");
+  } catch (error: any) {
+    console.error("❌ Error al guardar la clave pública:", error.response?.status, error.response?.data);
+    throw error;
+  }
 };
 
 export default api;

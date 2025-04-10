@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { generateRSAKeys, generateECCKeys } from "@/utils/crypto";
 import { savePublicKey } from "@/services/api";
+import FileUploader from "./components/FileUploader"; // ✅ Agregado
 
 export default function HomePage() {
   const [keyType, setKeyType] = useState<"rsa" | "ecc">("rsa");
@@ -70,7 +71,8 @@ export default function HomePage() {
         Generar llaves {keyType.toUpperCase()}
       </button>
 
-      {/* Aquí después irá subida de archivos y más cosas */}
+      {/* ✅ Subida y verificación de archivos */}
+      <FileUploader keyType={keyType} />
     </div>
   );
 }

@@ -4,8 +4,8 @@ export declare class UserController {
     constructor(userService: UserService);
     savePublicKey(req: any, publicKey: string): Promise<{
         id: number;
-        name: string;
         email: string;
+        name: string;
         password: string;
         publicKey: string;
     }>;
