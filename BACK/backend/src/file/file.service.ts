@@ -20,6 +20,15 @@ function base64urlToHex(b64url: string) {
 export class FileService {
   constructor(private prisma: PrismaService) {}
 
+  /**
+   * Guarda un archivo en la base de datos, junto con su firma y hash.
+   * 
+   * @param file Archivo subido por el usuario.
+   * @param signature Firma digital en base64 (opcional).
+   * @param hash Hash SHA-256 del archivo (opcional).
+   * @param userId ID del usuario que sube el archivo.
+   * @returns Registro creado en la base de datos.
+   */
   async saveFile(file: Express.Multer.File, signature: string | undefined, hash: string | undefined, userId: number) {
     console.log("📥 [GUARDAR] Nombre del archivo:", file.originalname);
     console.log("🧾 Tamaño:", file.size, "bytes");
@@ -38,6 +47,14 @@ export class FileService {
     });
   }
 
+  /**
+   * Verifica la firma digital de un archivo usando la clave pública proporcionada.
+   * Soporta claves ECC (P-256) y RSA.
+   * 
+   * @param fileId ID del archivo guardado en la base de datos.
+   * @param publicKeyPem Clave pública del usuario en formato PEM.
+   * @returns Resultado de la verificación con mensaje.
+   */
   async verifyFile(fileId: number, publicKeyPem: string) {
     console.log(`🔎 [VERIFICAR] Archivo ID: ${fileId}`);
 
@@ -109,12 +126,25 @@ export class FileService {
     }
   }
 
+  /**
+   * Detecta si una clave pública es ECC o RSA.
+   * 
+   * @param pem Clave pública en formato PEM.
+   * @returns Tipo de clave: 'rsa' o 'ecc'.
+   */
   private detectKeyType(pem: string): 'rsa' | 'ecc' {
     const result = pem.includes('EC') || pem.includes('YHKoZIzj0CAQY') ? 'ecc' : 'rsa';
     console.log("🧠 [DETECCIÓN CLAVE] Resultado:", result);
     return result;
   }
 
+  /**
+   * Devuelve los archivos pertenecientes a un usuario.
+   * 
+   * @param userId ID del usuario autenticado.
+   * @returns Lista de archivos con metadatos.
+   */
+    asyn
   async listFiles(userId: number) {
     console.log(`📂 Listando archivos del usuario ID: ${userId}`);
     return this.prisma.file.findMany({
@@ -123,6 +153,13 @@ export class FileService {
     });
   }
 
+  /**
+   * Busca un archivo por su ID y lo devuelve (incluyendo contenido binario).
+   * 
+   * @param id ID del archivo.
+   * @returns Archivo completo (nombre, contenido, firma, hash...).
+   * @throws Error si no se encuentra el archivo.
+   */
   async getFileById(id: number) {
     console.log(`📤 Solicitando archivo ID: ${id}`);
     const file = await this.prisma.file.findUnique({ where: { id } });
