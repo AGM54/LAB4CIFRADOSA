@@ -6,6 +6,15 @@ function arrayBufferToPem(buffer: ArrayBuffer, label: string): string {
   return `-----BEGIN ${label}-----\n${lines.join("\n")}\n-----END ${label}-----`;
 }
 
+// ✅ NUEVO: Calcular hash SHA-256 de un archivo
+export async function calculateHashSHA256(file: File): Promise<string> {
+  const buffer = await file.arrayBuffer();
+  const hashBuffer = await crypto.subtle.digest("SHA-256", buffer);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  const hashHex = hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+  return hashHex;
+}
+
 // Generar par de claves RSA
 export async function generateRSAKeys(): Promise<{ publicKey: string; privateKey: string }> {
   const keyPair = await window.crypto.subtle.generateKey(
