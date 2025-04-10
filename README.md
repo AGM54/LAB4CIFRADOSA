@@ -17,12 +17,12 @@ Este laboratorio implementa distintos esquemas de cifrado y firma digital, inclu
 
 ```
 src/
-├── app/home               # Módulo de autenticación
-├── file/               # Manejo seguro de archivos
-├── prisma/             # Esquema de base de datos
+├── app/home            # Módulo Inicio de la pagina
+├── app/register        # Registro de nuevo usuario
+├── service             # Conexion al backend
+├── utils               # Encriptacion, subida de archivos
 └── main.ts             # Punto de entrada
 ```
-
 ---
 
 
