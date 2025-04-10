@@ -12,14 +12,20 @@ export class AuthService {
 
   async register(email: string, name: string, password: string) {
     const existing = await this.prisma.user.findUnique({ where: { email } });
+
     if (existing) {
       throw new Error('Ya existe un usuario con este correo');
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    await this.prisma.user.create({
-      data: { email, name, password: hashedPassword, publicKey: "" }, 
 
+    await this.prisma.user.create({
+      data: {
+        email,
+        name,
+        password: hashedPassword,
+        publicKey: "" // Puede actualizarse luego
+      },
     });
 
     return { message: 'Usuario registrado exitosamente' };
@@ -28,13 +34,18 @@ export class AuthService {
   async login(email: string, password: string) {
     const user = await this.prisma.user.findUnique({ where: { email } });
 
-    if (!user) throw new UnauthorizedException('Credenciales inválidas');
+    if (!user) {
+      throw new UnauthorizedException('Credenciales inválidas');
+    }
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) throw new UnauthorizedException('Credenciales inválidas');
+    if (!isMatch) {
+      throw new UnauthorizedException('Credenciales inválidas');
+    }
 
+    // ✅ Campo sub usado por JwtStrategy
     const token = this.jwtService.sign({
-      id: user.id,
+      sub: user.id,
       email: user.email,
     });
 
@@ -44,7 +55,7 @@ export class AuthService {
   verifyToken(token: string) {
     try {
       return this.jwtService.verify(token, {
-        secret: process.env.JWT_SECRET,
+        secret: process.env.JWT_SECRET || 'defaultSecret',
       });
     } catch (error) {
       throw new UnauthorizedException('Token inválido o expirado');
