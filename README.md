@@ -1,5 +1,5 @@
-ASTRID MARIE GLAUSER OLIVA - 21299
-JOSUE SAMUEL ARGUETA HERNANDEZ - 211024
+- ASTRID MARIE GLAUSER OLIVA - 21299
+- JOSUE SAMUEL ARGUETA HERNANDEZ - 211024
 
 # LAB4CIFRADOSA
 
@@ -116,6 +116,7 @@ src/
 ├── auth/               # Módulo de autenticación
 ├── file/               # Manejo seguro de archivos
 ├── prisma/             # Esquema de base de datos
+├── user/               # Validacion de cifrado segun la llave del usuario actual
 └── main.ts             # Punto de entrada
 ```
 
